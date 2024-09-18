@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Profile {
+  id       String @id @default(uuid())
+  userId   String @unique
+  name     String
+  imageUrl String
+  email    String
+
+  servers  Server[]
+  members  Member[]
+  channels Channel[]
+
+  createAt  DateTime @default(now())
+  updateAtt DateTime @updatedAt
+}
+
+model Server {
+  id         String @id @default(uuid())
+  name       String
+  imageUrl   String
+  inviteCode String
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  createAt  DateTime @default(now())
+  updateAtt DateTime @updatedAt
+
+  members  Member[]
+  channels Channel[]
+
+  @@index([profileId])
+}
+
+model MemberRole {
+  id   String @id @default(uuid())
+  name String @unique
+
+  members Member[]
+
+  createAt  DateTime @default(now())
+  updateAtt DateTime @updatedAt
+}
+
+model Member {
+  id String @id @default(uuid())
+
+  MemberRoleId String
+  role         MemberRole @relation(fields: [MemberRoleId], references: [id], onDelete: Cascade)
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  createAt  DateTime @default(now())
+  updateAtt DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([serverId])
+}
+
+model ChannelType {
+  id   String @id @default(uuid())
+  name String @unique
+
+  channel Channel[]
+
+  createAt  DateTime @default(now())
+  updateAtt DateTime @updatedAt
+}
+
+model Channel {
+  id   String @id @default(uuid())
+  name String
+
+  ChannelTypeId String
+  type          ChannelType @relation(fields: [ChannelTypeId], references: [id], onDelete: Cascade)
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  createAt  DateTime @default(now())
+  updateAtt DateTime @updatedAt
+
+  @@index([serverId])
+  @@index([profileId])
+}
